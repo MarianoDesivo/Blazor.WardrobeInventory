@@ -1,16 +1,23 @@
-﻿@page "/uploadImage"
-@using Microsoft.Extensions.Logging
-@*@inject ILogger<FileUpload1> Logger*@
+﻿@page "/additem"
+@using Blazor.WardrobeInventory.Shared.Models
+@inject HttpClient _httpClient
+@inject NavigationManager navigationManager
 
-<h3>Upload image</h3>
+<h3>AddItem</h3>
 
+<label for="type"> Type </label>
+<input form="type" @bind=type placeholder="Shirt/Jeans/etc..."></input>
+
+<label for="color"> Color </label>
+<input form="color" @bind=color placeholder="White"> </input>
+
+<h4>Upload image</h4>
 <p>
     <label>
         Upload an image of up to @maxFileSize bytes:
         <InputFile OnChange="@LoadFile" />
     </label>
 </p>
-
 @if (isLoading)
 {
     <p>Uploading...</p>
@@ -33,7 +40,46 @@ else
     </ul>
 }
 
+<button class="btn btn-primary" onclick=@OnAdd> Save </button>
+
+@if (error)
+{
+    <p class="text-danger"> There was an error saving that item...</p>
+}
+
 @code {
+    private string? type;
+    private string? color;
+    private bool error;
+
+    private async void OnAdd()
+    {
+        error = false;
+
+        var item = new WardrobeItem
+            {
+                Type = type,
+                Color = color,
+                ImgData = imgData
+            };
+
+        var response = await _httpClient.PostAsJsonAsync("api/Wardrobe", item);
+        WardrobeItem itemResponse = await response.Content.ReadFromJsonAsync<WardrobeItem>();
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo("/");
+        }
+        else
+        {
+            error = true;
+            StateHasChanged();
+        }
+
+    }
+}
+
+@code {
+    //image upload code
     private List<IBrowserFile> loadedFiles = new();
     private long maxFileSize = 1024 * 15;
     private int maxAllowedFiles = 1;
@@ -43,6 +89,7 @@ else
     private async Task LoadFile(InputFileChangeEventArgs e)
     {
         isLoading = true;
+        StateHasChanged();
         loadedFiles.Clear();
         var imgFile = e.File;
 
@@ -59,5 +106,6 @@ else
         }
 
         isLoading = false;
+        StateHasChanged();
     }
 }

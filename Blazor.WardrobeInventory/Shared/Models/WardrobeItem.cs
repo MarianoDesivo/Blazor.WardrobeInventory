@@ -11,11 +11,7 @@ namespace Blazor.WardrobeInventory.Shared.Models;
 public class WardrobeItem
 {
     public int Id { get; set; }
-    [Required]
-    [Display(Name = "Shirt/Jeans/Jacket/...")]
-
     public string Type { get; set; }
-    [Display(Name = "Item Color")]
     public string Color { get; set; }
-    public string ImagePath { get; set; }
+    public string ImgData { get; set; }
 }
